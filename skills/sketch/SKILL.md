@@ -1,13 +1,13 @@
 ---
 name: sketch
-description: Capture a photo with the user's iPhone (Continuity Camera) and drop it straight into the chat, with no file left on disk or on the phone.
+description: Bring a paper sketch or diagram into the chat by photographing it with the user’s iPhone (Continuity Camera), so they can draw an idea by hand instead of describing it in words. No file left on disk or on the phone.
 ---
 
 # Sketch
 
 Photograph a paper sketch and get it straight into the chat, not onto the
-desktop. This skill drives macOS Continuity Camera ("Import from iPhone" →
-"Take Photo") end to end: no Finder window left open, no leftover file, no
+desktop. This skill drives macOS Continuity Camera (“Import from iPhone” →
+“Take Photo”) end to end: no Finder window left open, no leftover file, no
 permanent disruption to whatever the user was doing.
 
 ## Hard constraints
@@ -16,13 +16,13 @@ permanent disruption to whatever the user was doing.
   click, put it back, on every exit path including errors.
 - Never leave another app or window focused after the run. Record the
   frontmost app first, restore it last, on every exit path including errors.
-- The only way to make "Import from iPhone" appear in the menu is a real
+- The only way to make “Import from iPhone” appear in the menu is a real
   mouse click (confirmed: not available through the Accessibility API, not in
   the File menu, no documented CLI/URL). Keep that click to the one
   unavoidable moment and nowhere else.
 - Delete the captured file and its scratch folder once it has been read into
-  the chat, and delete the scratch folder on any failure path too. Don't ask,
-  don't leave it "just in case".
+  the chat, and delete the scratch folder on any failure path too. Don’t ask,
+  don’t leave it “just in case”.
 - Never `rm -f` or `rm -rf`. Delete the one known photo file with plain
   `rm`, then the now-empty scratch folder with `rmdir`.
 
