@@ -1,6 +1,6 @@
 ---
 name: code-style
-description: Write code like Didier.
+description: An opinionated good default for code style.
 ---
 
 # Code Style
