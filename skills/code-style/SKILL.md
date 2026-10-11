@@ -57,6 +57,8 @@ Editing an existing file: match the file first. New code: these are the defaults
 - Functions named by what they do, never `handle*`/`onClick` wrappers. A delete handler is `deleteItem`, not `handleDelete`.
 - Keyed lookups spell the key: `getUserById`, `caseBySlug`.
 - Name by domain meaning, not mechanics: a badge count of outstanding items is `todos`, not `notDoneCount`.
+- Names must not repeat their own context. Inside `server/[id]/`, `serverSections` is `sections` and `sectionHref` is `href`. Sizes are `sm | md | lg`.
+- Reach for the plain word. "Adornment", "affix", "contact fence" and other invented jargon get rejected on sight.
 - No `and`-chained names (`getPostsAndCommentsForUser`). If a name needs "and", the function does too much or the name is wrong. Keep it short.
 - State machines over booleans where applicable, even binary cases: `status: 'idle' | 'loading' | 'done'`.
 - Union-literal variant props over booleans: `variant: 'primary' | 'secondary' | 'ghost'`, not `isPrimary`.
@@ -75,6 +77,18 @@ Editing an existing file: match the file first. New code: these are the defaults
 
 ## Functions & errors
 
+- Declare with `function name()`, not `const name = () => {}`. Holds for module-level helpers and middleware. When the arrow only existed to carry a type, type the parameters instead.
+- Never chain off a constructor or a static factory. Bind it to a `const` named for what it is, then use it. Holds inside `.map()` callbacks too.
+  ```ts
+  // no
+  return { ...row, address: new MinecraftServer(env, row).address }
+
+  // yes
+  const minecraftServer = new MinecraftServer(env, row)
+  return { ...row, address: minecraftServer.address }
+  ```
+- When every function in a module takes the same first argument, make it a class: `server.wake()`, `server.sleep()`. A collection over those objects stays module functions.
+- Retry and backoff logic lives in one shared util, never inlined per call site.
 - Guard clauses: negated condition, braced, multi-line, uncommented.
   ```ts
   if (!selection) {
@@ -148,6 +162,7 @@ describe('isValidUrl', () => {
 
 - Change only what was asked. Touch no unrelated files. No side-effect edits to easing, globals, adjacent code.
 - Minimal diff. No unrequested improvements.
+- Simplification is measured in concepts, not lines. A refactor that grows the file while removing a concept is a win. One that packs the same concepts into fewer lines is not. The goal is that someone reading the codebase for the first time knows what everything is.
 - Reviews: propose, implement after approval.
 - Never destroy uncommitted work. Preserve git history. `--force-with-lease`, never bare `--force`.
 - Verify UI in a real browser with a screenshot before claiming it works. Don't declare done.
@@ -161,7 +176,13 @@ describe('isValidUrl', () => {
 - Data loading preference: remote functions + `<svelte:boundary>` ≫ load function ≫ `{#await}` ≫ `onMount` + `$state`.
 - `class` renamed on destructure to `className`/`classes`, typed `ClassValue`, applied via array syntax `class={['base', cond && 'x', className]}`. Spread `...rest` first, `class` last.
 - `$state` for locals and null-init DOM refs: `let el: HTMLElement | null = $state(null)`.
-- `$derived` for computed; `$derived.by(() => {...})` when multi-statement.
+- `$derived` for computed; `$derived.by(() => {...})` when multi-statement. Declare a `$derived` with `let`, not `const`.
+- Runes take no type argument. Write `let prop: Type = $state()`, never `let prop = $state<Type>()`. Same for `$derived` and `$props`.
+- Never write an `$effect` that assigns to `$state`. It hides the data flow and runs a frame late. When the value must hold a previous result, use `$derived.by` with a plain non-reactive `let` as the cache:
+  ```ts
+  let lastHits: Hit[] = []
+  let shownHits = $derived.by(() => (lastHits = results.current ?? lastHits))
+  ```
 - `$effect` rare and deliberate. Prefer `onMount` + observers, `@attach`, `Spring`/`Spring.of`.
 - Snippets typed `Snippet`, rendered `{@render children?.()}`.
 - Event handlers property form: `onclick`, never `on:click`.
